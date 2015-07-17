@@ -1,75 +1,134 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 ###Step1: Loading and preprocessing the data
 
-```{r loading the data,warning=FALSE}
+
+```r
 unzip("activity.zip", files = NULL, list = FALSE, overwrite = TRUE,junkpaths = FALSE, exdir = ".", unzip = "internal",setTimes = FALSE)
 activity_df <- read.csv("activity.csv", header = TRUE,sep =",",stringsAsFactors = FALSE)
 #closeAllConnections()
 ```
 
 Checking what type of variables do we have:
-```{r names}
+
+```r
 names(activity_df)
 ```
 
+```
+## [1] "steps"    "date"     "interval"
+```
+
 Checking how many observations are there and what type of data do we have:
-```{r str}
+
+```r
 str(activity_df)
 ```
 
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : chr  "2012-10-01" "2012-10-01" "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+```
+
 And let's look at the summary of data:
-```{r summary}
+
+```r
 summary(activity_df)
 ```
 
+```
+##      steps            date              interval     
+##  Min.   :  0.00   Length:17568       Min.   :   0.0  
+##  1st Qu.:  0.00   Class :character   1st Qu.: 588.8  
+##  Median :  0.00   Mode  :character   Median :1177.5  
+##  Mean   : 37.38                      Mean   :1177.5  
+##  3rd Qu.: 12.00                      3rd Qu.:1766.2  
+##  Max.   :806.00                      Max.   :2355.0  
+##  NA's   :2304
+```
+
 It looks like the data is tidy so we don't need to do any additional pre-processing. But some records are missing the steps data. Let's see how many of such records do we have:
-```{r counting NAs,warning=FALSE}
+
+```r
 sum(is.na(as.numeric(activity_df$steps)))
+```
+
+```
+## [1] 2304
 ```
 
 As we can see, there is about one fifth of observations that has missing values for the number of steps but we will decide how to replace missing values later.
 
 For now, we will just remove all incomplete cases:
-```{r complete cases}
+
+```r
 df_cc<-activity_df[complete.cases(activity_df),]
 str(df_cc)
+```
+
+```
+## 'data.frame':	15264 obs. of  3 variables:
+##  $ steps   : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ date    : chr  "2012-10-02" "2012-10-02" "2012-10-02" "2012-10-02" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
 ```
 As a result, the dimension of the original dataframe has been reduced.
 
 ###Step2: Calculating the mean number of steps taken per day
 
 For this part of the assignment, we will ignore the missing values in the dataset.
-```{r calculating mean,warning=FALSE}
+
+(Alternative!! Cleaning the data first: 
+
+df<-activity_df[complete.cases(activity_df),]
+df_mean<-aggregate(as.numeric(df$steps),list(df$date),mean)
+df_median<-aggregate(as.numeric(df$steps),list(df$date),median)
+df_total<-aggregate(as.numeric(df$steps),list(df$date),FUN=sum)
+)
+
+```r
 df_mean<-aggregate(as.numeric(df_cc$steps),list(df_cc$date),mean)
 #head(df$mean)
 head(df_mean[,2])
+```
+
+```
+## [1]  0.43750 39.41667 42.06944 46.15972 53.54167 38.24653
 ```
 We could have done this calculation on the original dataset (witout omitting the NAs) and we would have received the same result (one could try applying the same code to the original data set activity_df). But in this case a warning message saying that NAs have been introduced by coercion would have appeared.
 
 
 Calculating the median number of steps taken per day. For this part of the assignment, we will also ignore the missing values in the dataset, i.e. apply this operation to the clean dataset.
-```{r calculating median,warning=FALSE}
+
+```r
 df_median<-aggregate(as.numeric(df_cc$steps),list(df_cc$date),median)
 #head(df$median)
 head(df_median[,2])
+```
+
+```
+## [1] 0 0 0 0 0 0
 ```
 
 
 ###Step3: Calculating the total number of steps taken per day
 
 
-```{r calculating total, warning=FALSE}
 
-df_total<-aggregate(as.numeric(df_cc$steps),list(df_cc$date),FUN=sum)
+```r
+df_total<-aggregate(as.numeric(activity_df$steps),list(activity_df$date),FUN=sum)
 #adding appropriate labels to the data frame
 colnames(df_total) <- c("date", "total number of steps")
 head(df_total[,2])
+```
+
+```
+## [1]    NA   126 11352 12116 13294 15420
+```
+
+```r
 # why this one doesn't work??
 #library(dplyr)
 #df_total2<-activity_df %>%
@@ -83,36 +142,16 @@ head(df_total[,2])
 ```
 
 The histogram representation of the results gives us the following picture:
-```{r,echo=FALSE}
-hist(df_total[,2],
-     xlab="Numer of steps",
-     ylab="Days (frequency)", 
-     main ="Total number of steps taken per day",
-     col = "blue",
-     breaks = 30)
-```
+![](PA1_template_files/figure-html/unnamed-chunk-1-1.png) 
 
 ###Step 4: Defining the average daily activity pattern
 
-In order to define the average daily activity pattern, we wil group the data by time intervals and then we all average it across all intervals, i.e. we will define the number of steps for interval number 5 across all days and then we'll divide it by the number of intervals number 5 etc.
+In order to define the average daily activity pattern, we wil make a time series plot (i.e. type = "l") of the 5-minute intervals (x-axis) and the average number of  steps taken, averaged across all days (y-axis).
 
 
-```{r averaging by intervals}
-#loading dplyr library
-library(dplyr)
-#grouping the data by intervals
-df_cc_group<-group_by(df_cc,interval)
-df_cc_int<-summarize(df_cc_group,average_steps=sum(df_cc_group$steps)
-```
 
 And then we will make a time series plot (i.e. type = "l") of the 5-minute intervals (x-axis) and the averaged number of  steps taken (y-axis):
-```{r,echo=FALSE}
-plot(df_cc_int$interval,df_cc_int$average_steps/mean(df_cc_int$steps),
-     type="l",
-     xlab="Intervals",
-     ylab="Number of steps",
-     main="Average number of steps taken")
-```
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
 
 #Which 5-minute interval, on average across all the days in the dataset, contains the maximum number   of steps?
 
