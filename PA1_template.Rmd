@@ -98,23 +98,30 @@ In order to define the average daily activity pattern, we wil group the data by 
 
 
 ```{r averaging by intervals}
-#loading dplyr library
-library(dplyr)
-#grouping the data by intervals
-df_cc_group<-group_by(df_cc,interval)
-df_cc_int<-summarize(df_cc_group,average_steps=sum(df_cc_group$steps)
+#aggregating the data by steps, grouping by intervals and applying mean (i.e ariphmetical average)
+df_cc_int<-aggregate(df_cc[,1], list(df_cc$interval), mean)
 ```
 
 And then we will make a time series plot (i.e. type = "l") of the 5-minute intervals (x-axis) and the averaged number of  steps taken (y-axis):
 ```{r,echo=FALSE}
-plot(df_cc_int$interval,df_cc_int$average_steps/mean(df_cc_int$steps),
+plot(df_cc_int[,1],df_cc_int[,2],
      type="l",
      xlab="Intervals",
      ylab="Number of steps",
      main="Average number of steps taken")
 ```
 
-#Which 5-minute interval, on average across all the days in the dataset, contains the maximum number   of steps?
+We can see an obvious peak on the plot, which shows the 5-minute interval, on average across all the days in the dataset, containining the maximum number  of steps. Let's define which interval was it:
+```{r highest activity interval}
+max_steps<-max(df_cc_int[,2])
+max_int<-df_cc[df_cc[,2]==max_steps]
+#Adding the labels back to the dataframe
+colnames(df_cc_int)<-c("interval","steps")
+max_int<-df_cc_int[df_cc_int$steps==max_steps,]
+max_int
+```
+
+So we can see that it was interval number 835 that resulted in the highest average number of steps across all days.
 
 ###Step 5: Imputing missing values
 

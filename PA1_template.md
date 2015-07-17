@@ -80,14 +80,6 @@ As a result, the dimension of the original dataframe has been reduced.
 
 For this part of the assignment, we will ignore the missing values in the dataset.
 
-(Alternative!! Cleaning the data first: 
-
-df<-activity_df[complete.cases(activity_df),]
-df_mean<-aggregate(as.numeric(df$steps),list(df$date),mean)
-df_median<-aggregate(as.numeric(df$steps),list(df$date),median)
-df_total<-aggregate(as.numeric(df$steps),list(df$date),FUN=sum)
-)
-
 ```r
 df_mean<-aggregate(as.numeric(df_cc$steps),list(df_cc$date),mean)
 #head(df$mean)
@@ -118,14 +110,14 @@ head(df_median[,2])
 
 
 ```r
-df_total<-aggregate(as.numeric(activity_df$steps),list(activity_df$date),FUN=sum)
+df_total<-aggregate(as.numeric(df_cc$steps),list(df_cc$date),FUN=sum)
 #adding appropriate labels to the data frame
 colnames(df_total) <- c("date", "total number of steps")
 head(df_total[,2])
 ```
 
 ```
-## [1]    NA   126 11352 12116 13294 15420
+## [1]   126 11352 12116 13294 15420 11015
 ```
 
 ```r
@@ -146,14 +138,53 @@ The histogram representation of the results gives us the following picture:
 
 ###Step 4: Defining the average daily activity pattern
 
-In order to define the average daily activity pattern, we wil make a time series plot (i.e. type = "l") of the 5-minute intervals (x-axis) and the average number of  steps taken, averaged across all days (y-axis).
+In order to define the average daily activity pattern, we wil group the data by time intervals and then we all average it across all intervals, i.e. we will define the number of steps for interval number 5 across all days and then we'll divide it by the number of intervals number 5 etc.
 
 
+
+```r
+#loading dplyr library. do we need it for aggregate??
+library(dplyr)
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+## 
+## The following object is masked from 'package:stats':
+## 
+##     filter
+## 
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
+#aggregating the data by steps, grouping by intervals and applying mean (i.e ariphmetical average)
+df_cc_int<-aggregate(df_cc[,1], list(df_cc$interval), mean)
+```
 
 And then we will make a time series plot (i.e. type = "l") of the 5-minute intervals (x-axis) and the averaged number of  steps taken (y-axis):
 ![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
 
-#Which 5-minute interval, on average across all the days in the dataset, contains the maximum number   of steps?
+We can see an obvious peak on the plot, which shows the 5-minute interval, on average across all the days in the dataset, containining the maximum number  of steps. Let's define which interval was it:
+
+```r
+max_steps<-max(df_cc_int[,2])
+max_int<-df_cc[df_cc[,2]==max_steps]
+#Adding the labels back to the dataframe
+colnames(df_cc_int)<-c("interval","steps")
+max_int<-df_cc_int[df_cc_int$steps==max_steps,]
+max_int
+```
+
+```
+##     interval    steps
+## 104      835 206.1698
+```
+
+So we can see that it was interval number 835 that resulted in the highest average number of steps across all days.
 
 ###Step 5: Imputing missing values
 
