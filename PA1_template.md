@@ -123,7 +123,7 @@ median(df_median[,2])
 
 ###Step3: Calculating the total number of steps taken per day
 
-
+To calculate the total number of steps taken per day, we will need to aggregate the data by date and then summarize the value for each group:
 
 ```r
 df_total<-aggregate(as.numeric(df_cc$steps),list(df_cc$date),FUN=sum)
@@ -156,9 +156,7 @@ hist(df_total[,2],
 
 ###Step 4: Defining the average daily activity pattern
 
-In order to define the average daily activity pattern, we wil group the data by time intervals and then we all average it across all intervals, i.e. we will define the number of steps for interval number 5 across all days and then we'll divide it by the number of intervals number 5 etc.
-
-
+In order to define the average daily activity pattern, we wil group the data by time intervals and then we all average it across all intervals, i.e. we will define the number of steps for interval number 5 across all days and then we'll divide it by the number of intervals number 5 etc.:
 
 ```r
 #aggregating the data by steps, grouping by intervals and applying mean (i.e ariphmetical average)
@@ -193,7 +191,7 @@ max_int
 ## 104      835 206.1698
 ```
 
-So we can see that it was interval number 835 that resulted in the highest average number of steps across all days.
+So we can see that it was the interval number 835 that resulted in the highest average number of steps across all days.
 
 ###Step 5: Imputing missing values
 
@@ -369,7 +367,11 @@ To visualize it, we will build a panel plot containing a time series plot (i.e. 
 library(lattice)
 xyplot(df$steps ~ df$interval | f, panel = function(x, y, ...){
     # call the default panel function for xyplot
-    panel.xyplot(x, y, ...)},type="l",xlab="Intervals",ylab="Number of steps")
+    panel.xyplot(x, y, ...)},
+    type="l",
+    xlab="Intervals",
+    ylab="Number of steps",
+    layout=c(1,2))
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-6-1.png) 
