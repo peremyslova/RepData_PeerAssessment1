@@ -2,6 +2,21 @@
 
 ###Step1: Loading and preprocessing the data
 
+Preparing the environment for futher R Markdown file processing:
+
+```r
+require(knitr)
+```
+
+```
+## Loading required package: knitr
+```
+
+```r
+opts_chunk$set(echo = TRUE, cache = TRUE, cache.path = "cache/", fig.path = "figure/")
+```
+
+Unzipping the archive with the data and loading it to create the data frame:
 
 ```r
 unzip("activity.zip", files = NULL, list = FALSE, overwrite = TRUE,junkpaths = FALSE, exdir = ".", unzip = "internal",setTimes = FALSE)
@@ -152,7 +167,7 @@ hist(df_total[,2],
      )
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
+![](figure/unnamed-chunk-2-1.png) 
 
 ###Step 4: Defining the average daily activity pattern
 
@@ -173,7 +188,7 @@ plot(df_cc_int[,1],df_cc_int[,2],
      main="Average number of steps taken")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
+![](figure/unnamed-chunk-3-1.png) 
 
 We can see an obvious peak on the plot, which shows the 5-minute interval, on average across all the days in the dataset, containining the maximum number  of steps. Let's define which interval was it:
 
@@ -290,7 +305,7 @@ hist(imp_df_daily$Steps,
      )
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
+![](figure/unnamed-chunk-4-1.png) 
 
 We will also compare mean and median daily values of the new data set with the original vectors of means and median values. Calculating means:
 
@@ -374,7 +389,7 @@ xyplot(df$steps ~ df$interval | f, panel = function(x, y, ...){
     layout=c(1,2))
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-6-1.png) 
+![](figure/unnamed-chunk-6-1.png) 
 
 As expected, weekdays have shown higher activity in the beginning of the day, which could be explained by morning commute to work. The activity during the day on weekdays stayed moderate, while the weekend activity stayed roughtly same throught the day except for the night degradation.
 

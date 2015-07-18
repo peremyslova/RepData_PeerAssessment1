@@ -57,6 +57,11 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 
 <div id="step1-loading-and-preprocessing-the-data" class="section level3">
 <h3>Step1: Loading and preprocessing the data</h3>
+<p>Preparing the environment for futher R Markdown file processing:</p>
+<pre class="r"><code>require(knitr)</code></pre>
+<pre><code>## Loading required package: knitr</code></pre>
+<pre class="r"><code>opts_chunk$set(echo = TRUE, cache = TRUE, cache.path = &quot;cache/&quot;, fig.path = &quot;figure/&quot;)</code></pre>
+<p>Unzipping the archive with the data and loading it to create the data frame:</p>
 <pre class="r"><code>unzip(&quot;activity.zip&quot;, files = NULL, list = FALSE, overwrite = TRUE,junkpaths = FALSE, exdir = &quot;.&quot;, unzip = &quot;internal&quot;,setTimes = FALSE)
 activity_df &lt;- read.csv(&quot;activity.csv&quot;, header = TRUE,sep =&quot;,&quot;,stringsAsFactors = FALSE)
 #closeAllConnections()</code></pre>

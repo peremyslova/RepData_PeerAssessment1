@@ -7,6 +7,13 @@ output:
 
 ###Step1: Loading and preprocessing the data
 
+Preparing the environment for futher R Markdown file processing:
+```{r setoptions, echo=TRUE}
+require(knitr)
+opts_chunk$set(echo = TRUE, cache = TRUE, cache.path = "cache/", fig.path = "figure/")
+```
+
+Unzipping the archive with the data and loading it to create the data frame:
 ```{r loading the data,warning=FALSE}
 unzip("activity.zip", files = NULL, list = FALSE, overwrite = TRUE,junkpaths = FALSE, exdir = ".", unzip = "internal",setTimes = FALSE)
 activity_df <- read.csv("activity.csv", header = TRUE,sep =",",stringsAsFactors = FALSE)
