@@ -59,7 +59,7 @@ sum(is.na(as.numeric(activity_df$steps)))
 ## [1] 2304
 ```
 
-As we can see, there is about one fifth of observations that has missing values for the number of steps but we will decide how to replace missing values later.
+As we can see, there is about one eighth of observations that has missing values for the number of steps but we will decide how to replace missing values later.
 
 For now, we will just remove all incomplete cases:
 
@@ -105,6 +105,22 @@ head(df_median[,2])
 ```
 
 
+```r
+mean(df_mean[,2])
+```
+
+```
+## [1] 37.3826
+```
+
+```r
+median(df_median[,2])
+```
+
+```
+## [1] 0
+```
+
 ###Step3: Calculating the total number of steps taken per day
 
 
@@ -120,21 +136,23 @@ head(df_total[,2])
 ## [1]   126 11352 12116 13294 15420 11015
 ```
 
+The histogram representation of the results gives us the following picture:
+
 ```r
-# why this one doesn't work??
-#library(dplyr)
-#df_total2<-activity_df %>%
-#     group_by(date) %>%
-#     summarize(total_steps=sum(as.numeric(activity_df$steps), na.rm=TRUE))
-    
-#alternative
-#df_t<-group_by(activity_df,date)
-#df_total3<-summarize(df_t,total=sum(as.numeric(activity_df$steps),na.rm=TRUE))
-#summary(df_total3)
+hist(df_total[,2],
+     xlab="Numer of steps",
+     ylab="Days (frequency)", 
+     main ="Total number of steps taken per day",
+     col = "blue",
+     breaks=20,
+     density=40,
+     label=TRUE,
+     ylim=c(0,20),
+     xlim=c(0,25000)
+     )
 ```
 
-The histogram representation of the results gives us the following picture:
-![](PA1_template_files/figure-html/unnamed-chunk-1-1.png) 
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
 
 ###Step 4: Defining the average daily activity pattern
 
@@ -143,30 +161,21 @@ In order to define the average daily activity pattern, we wil group the data by 
 
 
 ```r
-#loading dplyr library. do we need it for aggregate??
-library(dplyr)
-```
-
-```
-## 
-## Attaching package: 'dplyr'
-## 
-## The following object is masked from 'package:stats':
-## 
-##     filter
-## 
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union
-```
-
-```r
 #aggregating the data by steps, grouping by intervals and applying mean (i.e ariphmetical average)
 df_cc_int<-aggregate(df_cc[,1], list(df_cc$interval), mean)
 ```
 
 And then we will make a time series plot (i.e. type = "l") of the 5-minute intervals (x-axis) and the averaged number of  steps taken (y-axis):
-![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
+
+```r
+plot(df_cc_int[,1],df_cc_int[,2],
+     type="l",
+     xlab="Intervals",
+     ylab="Number of steps",
+     main="Average number of steps taken")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
 
 We can see an obvious peak on the plot, which shows the 5-minute interval, on average across all the days in the dataset, containining the maximum number  of steps. Let's define which interval was it:
 
@@ -188,27 +197,186 @@ So we can see that it was interval number 835 that resulted in the highest avera
 
 ###Step 5: Imputing missing values
 
+We've already discovered the number of days/intervals where there are missing values (see above). Previously, we've excluded such objects from the analysis. Such method of analysis is called 'complete cases'. Although, we have a relatively small number of incomplete cases, the strategy of excluding them altogether might bias our analysis because the units with missing values potentially differ systematically from the completely observed cases (Source: http://www.stat.columbia.edu/~gelman/arm/missing.pdf).
 
-Note that there are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data.
+There is a number of strategies around imputing missing values in datasets. Usually, the strategy chosen depends on the patterns around the missing data. If we could confirm that missing data is completely random, i.e. it doesn't correlate with other factors such as a days of the week or time of the day, then in this case we would simply used mean or median for the day or interval for which the data is missing. 
 
-Calculate and report the total number of missing values in the dataset (i.e. the total number of rows #with NAs)
+We will proceed with a simple replacement of missing values of steps with a mean for numbers of steps for this day:
 
-Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need #to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5#-minute interval, etc.
+```r
+library(plyr)
+#creating a function replacing a value with its mean
+impute.mean <- function(x) replace(x, is.na(x), mean(x, na.rm = TRUE))
 
-Create a new dataset that is equal to the original dataset but with the missing data filled in.
+#imputing missing values by groups (intervals)
+imp_df <- ddply(activity_df, ~ interval, transform, steps = impute.mean(steps))
+```
+
+
+The new dataset that is equal to the original dataset but with the missing data filled in now looks like:
+
+```r
+summary(imp_df)
+```
+
+```
+##      steps            date              interval     
+##  Min.   :  0.00   Length:17568       Min.   :   0.0  
+##  1st Qu.:  0.00   Class :character   1st Qu.: 588.8  
+##  Median :  0.00   Mode  :character   Median :1177.5  
+##  Mean   : 37.38                      Mean   :1177.5  
+##  3rd Qu.: 27.00                      3rd Qu.:1766.2  
+##  Max.   :806.00                      Max.   :2355.0
+```
+
+We can now compare it with the summary of the original data frames and see if anything has changed: 
+
+```r
+summary(activity_df)
+```
+
+```
+##      steps            date              interval     
+##  Min.   :  0.00   Length:17568       Min.   :   0.0  
+##  1st Qu.:  0.00   Class :character   1st Qu.: 588.8  
+##  Median :  0.00   Mode  :character   Median :1177.5  
+##  Mean   : 37.38                      Mean   :1177.5  
+##  3rd Qu.: 12.00                      3rd Qu.:1766.2  
+##  Max.   :806.00                      Max.   :2355.0  
+##  NA's   :2304
+```
+
+As we can see, the mean and median values of steps stayed the same, however, the 3rd quartile has changed.
 
 ###Step 6: Making a histogram of the total number of steps taken each day after missing values were imputed
 
-Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+We will now build a histogram of the total number of steps taken each day to see how it differs from the original one we build before imputing missing values:
 
+```r
+library(dplyr)
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+## 
+## The following objects are masked from 'package:plyr':
+## 
+##     arrange, count, desc, failwith, id, mutate, rename, summarise,
+##     summarize
+## 
+## The following object is masked from 'package:stats':
+## 
+##     filter
+## 
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
+imp_df_daily<-summarize(group_by(imp_df,date),sum(steps))
+imp_df$date<-as.Date(imp_df$date)
+#recovering proper labels
+colnames(imp_df_daily)<-c("Date","Steps")
+hist(imp_df_daily$Steps,
+     breaks=20,
+     density=40,
+     col="blue",
+     label=TRUE,
+     ylim=c(0,20),
+     xlim=c(0,25000),
+     xlab="Number of steps",
+     ylab="Days (frequency)",
+     main="Total number of steps taken per day (after imputting missing data)"
+     )
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
+
+We will also compare mean and median daily values of the new data set with the original vectors of means and median values. Calculating means:
+
+```r
+df_imp_mean<-aggregate(as.numeric(imp_df$steps),list(imp_df$date),mean)
+head(df_imp_mean[,2])
+```
+
+```
+## [1] 37.38260  0.43750 39.41667 42.06944 46.15972 53.54167
+```
+
+Calculating medians:
+
+```r
+df_imp_median<-aggregate(as.numeric(imp_df$steps),list(imp_df$date),median)
+head(df_imp_median[,2])
+```
+
+```
+## [1] 34.11321  0.00000  0.00000  0.00000  0.00000  0.00000
+```
+
+((Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?))
+
+
+```r
+mean(df_imp_mean[,2])
+```
+
+```
+## [1] 37.3826
+```
+
+```r
+median(df_imp_median[,2])
+```
+
+```
+## [1] 0
+```
 
 ###Step 7: Activity patterns on weekdays vs. weekends
 
-Are there differences in activity patterns between weekdays and weekends?
-For this part the weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
+In order to research the differences in activity patterns between weekdays and weekends, we will create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day. We will use the dataset with the filled-in missing values for this part.
 
-Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+```r
+imp_df$day<-weekdays(imp_df$date)
+imp_df$isweekday<-(imp_df$day=="Saturday" | imp_df$day=="Sunday")
 
-Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). 
+#separating the dataset into two
+#for weekends
+imp_df_weekend<-subset(imp_df,isweekday==FALSE)
+#for weekdays
+imp_df_weekday<-subset(imp_df,isweekday==TRUE)
+#grouping the data by dates and calculating the mean for each date
+df_weekend<-aggregate(imp_df_weekend[,1], list(imp_df_weekend$interval), mean)
+df_weekday<-aggregate(imp_df_weekday[,1], list(imp_df_weekday$interval), mean)
+#restoring the knowledge about weekends vs. weekdays
+df_weekend$day<-"weekend"
+df_weekday$day<-"weekday"
+#merging the datasets back into one
+df<-rbind(df_weekend,df_weekday)
+#restoring proper column names
+colnames(df)<-c("interval","steps","day")
 
-See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
+#adding a factor variable in order to separate the data for weekends and weekdays to use it later for plotting
+f <- factor(df$day, labels = c("weekend", "weekday"))
+```
+
+To visualize it, we will build a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis):
+
+```r
+library(lattice)
+xyplot(df$steps ~ df$interval | f, panel = function(x, y, ...){
+    # call the default panel function for xyplot
+    panel.xyplot(x, y, ...)},type="l",xlab="Intervals",ylab="Number of steps")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png) 
+
+As expected, weekdays have shown higher activity in the beginning of the day, which could be explained by morning commute to work. The activity during the day on weekdays stayed moderate, while the weekend activity stayed roughtly same throught the day except for the night degradation.
+
+Further analysis of patterns aroung the missing values should be conducted in order to develop better missing values imputation strategy that could be used for the future modeling and predictions.
+
+((In order to do a quick analysis of randomness of missing values in our data frame, we will try to vizualize it using special package called "VIMGUI" (More here: https://cran.r-project.org/web/packages/VIMGUI/vignettes/VIM-Imputation.pdf). The function 'histMiss' of this package can be used to produce histograms which display the proportion of missing values of
+each variable using the color red in the lower part of each bar, the upper portions are displayed in blue.))
