@@ -64,11 +64,6 @@ df_median<-aggregate(as.numeric(df_cc$steps),list(df_cc$date),median)
 head(df_median[,2])
 ```
 
-```{r}
-mean(df_mean[,2])
-
-median(df_median[,2])
-```
 
 ###Step3: Calculating the total number of steps taken per day
 
@@ -95,6 +90,14 @@ hist(df_total[,2],
      xlim=c(0,25000)
      )
 ```
+
+Calculation mean and median of total number of steps taken per day:
+```{r}
+mean(df_total[,2])
+
+median(df_total[,2])
+```
+shows that mean and median values are slightly different.
 
 ###Step 4: Defining the average daily activity pattern
 
@@ -160,7 +163,7 @@ We will now build a histogram of the total number of steps taken each day to see
 ```{r}
 library(dplyr)
 imp_df_daily<-summarize(group_by(imp_df,date),sum(steps))
-imp_df$date<-as.Date(imp_df$date)
+imp_df_daily$date<-as.Date(imp_df_daily$date)
 #recovering proper labels
 colnames(imp_df_daily)<-c("Date","Steps")
 hist(imp_df_daily$Steps,
@@ -188,12 +191,14 @@ df_imp_median<-aggregate(as.numeric(imp_df$steps),list(imp_df$date),median)
 head(df_imp_median[,2])
 ```
 
-
+Calculating mean and median of total number of steps taken per day after imputing missing values:
 ```{r}
-mean(df_imp_mean[,2])
+mean(imp_df_daily$Steps)
 
-median(df_imp_median[,2])
+median(imp_df_daily$Steps)
 ```
+
+As we can see, the mean and median values are now the same, which is expected since we've used means to replace the missing values.
 
 ###Step 7: Activity patterns on weekdays vs. weekends
 
