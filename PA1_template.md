@@ -21,7 +21,6 @@ Unzipping the archive with the data and loading it to create the data frame:
 ```r
 unzip("activity.zip", files = NULL, list = FALSE, overwrite = TRUE,junkpaths = FALSE, exdir = ".", unzip = "internal",setTimes = FALSE)
 activity_df <- read.csv("activity.csv", header = TRUE,sep =",",stringsAsFactors = FALSE)
-#closeAllConnections()
 ```
 
 Checking what type of variables do we have:
@@ -97,7 +96,6 @@ For this part of the assignment, we will ignore the missing values in the datase
 
 ```r
 df_mean<-aggregate(as.numeric(df_cc$steps),list(df_cc$date),mean)
-#head(df$mean)
 head(df_mean[,2])
 ```
 
@@ -111,7 +109,6 @@ Calculating the median number of steps taken per day. For this part of the assig
 
 ```r
 df_median<-aggregate(as.numeric(df_cc$steps),list(df_cc$date),median)
-#head(df$median)
 head(df_median[,2])
 ```
 
@@ -212,9 +209,9 @@ So we can see that it was the interval number 835 that resulted in the highest a
 
 We've already discovered the number of days/intervals where there are missing values (see above). Previously, we've excluded such objects from the analysis. Such method of analysis is called 'complete cases'. Although, we have a relatively small number of incomplete cases, the strategy of excluding them altogether might bias our analysis because the units with missing values potentially differ systematically from the completely observed cases (Source: http://www.stat.columbia.edu/~gelman/arm/missing.pdf).
 
-There is a number of strategies around imputing missing values in datasets. Usually, the strategy chosen depends on the patterns around the missing data. If we could confirm that missing data is completely random, i.e. it doesn't correlate with other factors such as a days of the week or time of the day, then in this case we would simply used mean or median for the day or interval for which the data is missing. 
+There is a number of strategies around imputing missing values in datasets. Usually, the strategy chosen depends on the patterns around the missing data. If we could confirm that missing data is completely random, i.e. it doesn't correlate with other factors such as a days of the week or time of the day, then in this case we would simply used mean or median for the day or interval for which the data is missing. In order to do a quick analysis of randomness of missing values in the data frame, special vizualization packages can be be used.
 
-We will proceed with a simple replacement of missing values of steps with a mean for numbers of steps for this day:
+We will leave it out of scope for the current analysis and we'll proceed with a simple replacement of missing values of steps with a mean for numbers of steps for this day:
 
 ```r
 library(plyr)
@@ -267,27 +264,6 @@ We will now build a histogram of the total number of steps taken each day to see
 
 ```r
 library(dplyr)
-```
-
-```
-## 
-## Attaching package: 'dplyr'
-## 
-## The following objects are masked from 'package:plyr':
-## 
-##     arrange, count, desc, failwith, id, mutate, rename, summarise,
-##     summarize
-## 
-## The following object is masked from 'package:stats':
-## 
-##     filter
-## 
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union
-```
-
-```r
 imp_df_daily<-summarize(group_by(imp_df,date),sum(steps))
 imp_df$date<-as.Date(imp_df$date)
 #recovering proper labels
@@ -329,7 +305,6 @@ head(df_imp_median[,2])
 ## [1] 34.11321  0.00000  0.00000  0.00000  0.00000  0.00000
 ```
 
-((Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?))
 
 
 ```r
@@ -394,6 +369,3 @@ xyplot(df$steps ~ df$interval | f, panel = function(x, y, ...){
 As expected, weekdays have shown higher activity in the beginning of the day, which could be explained by morning commute to work. The activity during the day on weekdays stayed moderate, while the weekend activity stayed roughtly same throught the day except for the night degradation.
 
 Further analysis of patterns aroung the missing values should be conducted in order to develop better missing values imputation strategy that could be used for the future modeling and predictions.
-
-((In order to do a quick analysis of randomness of missing values in our data frame, we will try to vizualize it using special package called "VIMGUI" (More here: https://cran.r-project.org/web/packages/VIMGUI/vignettes/VIM-Imputation.pdf). The function 'histMiss' of this package can be used to produce histograms which display the proportion of missing values of
-each variable using the color red in the lower part of each bar, the upper portions are displayed in blue.))
